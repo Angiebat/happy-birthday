@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Happy Birthday ♡</title>
+  <meta name="description" content="You have a surprise waiting for you.">
+  <meta name="theme-color" content="#f7d7e8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23efc3cb' stroke='%23a24f66' stroke-width='1.6' d='M12 21s-7.5-4.6-9.6-9.2C.8 8.3 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.7 0 5.8 3.8 4.2 7.3C19.5 16.4 12 21 12 21z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Parisienne&family=Quicksand:wght@500;600;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- SVG filters: hand-drawn wobble + watercolor bleed -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="sketch"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter>
+      <filter id="watercolor" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="8" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="12" result="d"/><feGaussianBlur in="d" stdDeviation="1.4"/></filter>
+    </defs>
+  </svg>
+  <div class="wall"></div>
+  <div class="grain"></div>
+  <span class="ribbon tl" data-art="ribbon"></span>
+  <span class="ribbon tr" data-art="ribbon"></span>
+  <span class="ribbon bl" data-art="ribbon"></span>
+  <span class="ribbon br" data-art="ribbon"></span>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <button class="mini" id="mini" aria-label="Play music" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v10.6A4 4 0 1 0 11 17V7h6V3H9z"/></svg>
+  </button>
+
+  <main class="stage">
+
+    <!-- HOME -->
+    <section class="page" id="home">
+      <h1 class="script">Happy Birthday<span data-name></span></h1>
+      <button class="gift" id="gift" aria-label="Open your surprise" data-art="gift"></button>
+      <p class="sub">You have a surprise waiting for you</p>
+      <p class="note">tap the gift ♡ sound on</p>
+    </section>
+
+    <!-- HUB -->
+    <section class="page" id="hub" hidden>
+      <h2 class="script">Made just for <span data-name></span></h2>
+      <div class="tiles">
+        <button class="tile" data-go="photos" aria-label="Our memories"><span data-art="tilePhoto"></span><span class="label">memories</span><span class="seen" data-art="heart"></span><span class="tile-bow" data-art="bow"></span></button>
+        <button class="tile" data-go="music" aria-label="Our songs"><span data-art="tileMusic"></span><span class="label">our songs</span><span class="seen" data-art="heart"></span><span class="tile-bow" data-art="bow"></span></button>
+        <button class="tile" data-go="letter" aria-label="Peonies and a letter"><span data-art="tulips"></span><span class="label">for you</span><span class="seen" data-art="heart"></span><span class="tile-bow" data-art="bow"></span></button>
+        <button class="tile" data-go="cake" aria-label="Make a wish"><span data-art="tileCake"></span><span class="label">make a wish</span><span class="seen" data-art="heart"></span><span class="tile-bow" data-art="bow"></span></button>
+      </div>
+      <p class="sub">Click one to proceed!</p>
+    </section>
+
+    <!-- PHOTOS -->
+    <section class="page" id="photos" hidden>
+      <button class="back" data-go="hub"><span data-art="back"></span>Back</button>
+      <h2 class="script">Our little memories</h2>
+      <div class="board">
+        <span class="bunting l" data-art="bunting"></span>
+        <span class="bunting r" data-art="bunting"></span>
+        <span class="deco hat" data-art="hat"></span>
+        <span class="deco balloons" data-art="balloons"></span>
+        <span class="deco balloons r" data-art="balloons"></span>
+        <div class="polaroids" id="polaroids"></div>
+      </div>
+      <p class="note">tap a photo to look closer</p>
+    </section>
+
+    <!-- MUSIC -->
+    <section class="page" id="music" hidden>
+      <button class="back" data-go="hub"><span data-art="back"></span>Back</button>
+      <h2 class="script">Songs that remind me of you</h2>
+      <div class="player">
+        <div class="deck">
+          <div class="screen" id="cover"></div>
+          <p class="song" id="songTitle"></p>
+          <p class="artist" id="songArtist"></p>
+          <div class="bar" id="bar" role="slider" aria-label="Song progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><i id="barFill"></i></div>
+          <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+          <div class="controls">
+            <button id="prev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+            <button id="play" class="play" aria-label="Play"><svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg></button>
+            <button id="next" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+            <button id="fav" class="fav" aria-label="Love this song"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.8 8.3 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.7 0 5.8 3.8 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg></button>
+          </div>
+        </div>
+        <div class="vinyl" id="vinyl"><b></b></div>
+      </div>
+      <div class="playlist" id="playlist"></div>
+    </section>
+
+    <!-- FLOWERS + LETTER -->
+    <section class="page" id="letter" hidden>
+      <button class="back" data-go="hub"><span data-art="back"></span>Back</button>
+      <h2 class="script">Peonies for you</h2>
+      <button class="bouquet" id="bouquet" aria-label="Take the flowers and read the letter" data-art="tulipsTag"></button>
+      <p class="note" id="bouquetHint">take the flowers ♡ there's a note inside</p>
+      <article class="letter" id="letterBody" hidden></article>
+    </section>
+
+    <!-- CAKE -->
+    <section class="page" id="cake" hidden>
+      <button class="back" data-go="hub"><span data-art="back"></span>Back</button>
+      <h2 class="script">Make a wish</h2>
+      <div class="cake" id="cakeArt" data-art="cake"></div>
+      <p class="wish" id="wish">close your eyes, then blow out each candle</p>
+    </section>
+
+  </main>
+
+  <!-- order matters: config first, main last -->
+  <script src="js/config.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/confetti.js"></script>
+  <script src="js/music.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
