@@ -11,7 +11,7 @@
   let idx = 0, playing = false, listeners = [];
   let ctx = null, boxOut = null, boxStart = 0, boxPausedAt = 0, raf = null;
   const audio = new Audio();
-  audio.preload = "metadata";
+  audio.preload = "auto";
 
   /* ---------- music box ---------- */
   const N = { G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
@@ -74,11 +74,13 @@
     const s = { idx, playing, song: songs[idx], songs, ...time() };
     listeners.forEach(fn => fn(s));
   }
+  // 4 updates per second is plenty for a progress bar and keeps the phone free to play audio smoothly
   function tick() {
+    if (!playing) { clearInterval(raf); raf = null; return; }
     emit();
-    if (playing && isBox() && time().cur >= BOX_LEN - 0.05) { next(); return; }
-    raf = playing ? requestAnimationFrame(tick) : null;
+    if (isBox() && time().cur >= BOX_LEN - 0.05) next();
   }
+  function startTick() { if (!raf) raf = setInterval(tick, 250); }
 
   function play() {
     if (isBox()) {
@@ -89,7 +91,7 @@
       audio.play().catch(() => {});
     }
     playing = true;
-    if (!raf) raf = requestAnimationFrame(tick);
+    startTick();
     emit();
   }
   function pause() {
@@ -117,6 +119,8 @@
   function seek(f) { if (!isBox() && audio.duration) { audio.currentTime = f * audio.duration; emit(); } }
 
   audio.addEventListener("ended", next);
+  audio.addEventListener("pause", () => { if (playing && !audio.ended && !isBox()) { playing = false; emit(); } });
+  audio.addEventListener("play", () => { if (!playing) { playing = true; startTick(); emit(); } });
   audio.addEventListener("loadedmetadata", emit);
   audio.addEventListener("error", () => { console.warn("Could not load", songs[idx].src); });
 
@@ -125,6 +129,8 @@
   /* candle-blow whoosh */
   let fxCtx = null; // separate context so pausing music never mutes the whoosh
   function blow() {
+    // iPhone can stutter an mp3 when a second sound engine starts, so stay quiet while a song plays
+    if (playing && !isBox()) return;
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
     const c = fxCtx || (fxCtx = new AC());
     if (c.state === "suspended") c.resume();
