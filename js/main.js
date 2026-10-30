@@ -82,25 +82,30 @@
   });
   if (Player.songs.length < 2) $("#playlist").hidden = true;
 
+  let lastPlaying = null, lastPct = -1, lastCur = "", lastDur = "";
   Player.onChange(s => {
     if (s.idx !== shownIdx) {
       shownIdx = s.idx;
       $("#songTitle").textContent = s.song.title || "";
       $("#songArtist").textContent = s.song.artist || "";
-      $("#cover").innerHTML = s.song.cover ? `<img src="${esc(s.song.cover)}" alt="">` : ART.scene(s.idx + 1);
+      $("#cover").innerHTML = s.song.cover ? `<img src="${esc(s.song.cover)}" alt="" decoding="async">` : ART.scene(s.idx + 1);
       $$(".chip").forEach((c, i) => c.classList.toggle("on", i === s.idx));
       $("#fav").classList.toggle("on", favs.has(s.idx));
     }
-    const pct = s.dur ? (s.cur / s.dur) * 100 : 0;
-    $("#barFill").style.width = pct + "%";
-    $("#bar").setAttribute("aria-valuenow", Math.round(pct));
-    $("#tCur").textContent = fmt(s.cur);
-    $("#tDur").textContent = fmt(s.dur);
-    $("#playIcon").innerHTML = s.playing ? PAUSE : PLAY;
-    $("#play").setAttribute("aria-label", s.playing ? "Pause" : "Play");
-    $("#vinyl").classList.toggle("spin", s.playing);
-    $("#mini").classList.toggle("on", s.playing);
-    $("#mini").setAttribute("aria-label", s.playing ? "Pause music" : "Play music");
+    // only touch the page when something actually changed
+    const pct = s.dur ? Math.round((s.cur / s.dur) * 1000) / 10 : 0;
+    if (pct !== lastPct) { lastPct = pct; $("#barFill").style.transform = `scaleX(${pct / 100})`; $("#bar").setAttribute("aria-valuenow", Math.round(pct)); }
+    const cur = fmt(s.cur), dur = fmt(s.dur);
+    if (cur !== lastCur) { lastCur = cur; $("#tCur").textContent = cur; }
+    if (dur !== lastDur) { lastDur = dur; $("#tDur").textContent = dur; }
+    if (s.playing !== lastPlaying) {
+      lastPlaying = s.playing;
+      $("#playIcon").innerHTML = s.playing ? PAUSE : PLAY;
+      $("#play").setAttribute("aria-label", s.playing ? "Pause" : "Play");
+      $("#vinyl").classList.toggle("spin", s.playing);
+      $("#mini").classList.toggle("on", s.playing);
+      $("#mini").setAttribute("aria-label", s.playing ? "Pause music" : "Play music");
+    }
   });
 
   $("#play").addEventListener("click", () => Player.toggle());
